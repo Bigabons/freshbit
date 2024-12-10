@@ -41,19 +41,20 @@ class BitrixService {
     }
   }
 
-  async createActivity(activityData) {
-    try {
-      const response = await axios.post(`${this.webhookUrl}/crm.activity.add`, {
-        fields: {
-          ...activityData,
-          COMMUNICATIONS: [
-            {
-              VALUE: activityData.EMAIL,
-              TYPE: 'EMAIL'
-            }
-          ]
-        }
-      });
+async createActivity(fields) {
+  try {
+    const response = await axios.post(`${this.webhookUrl}/crm.activity.add`, {
+      fields: {
+        ...fields,
+        CREATED_BY: 1
+      }
+    });
+    return { ID: response.data.result };
+  } catch (error) {
+    console.error('Error creating activity:', error);
+    throw error;
+  }
+}
       
       return { ID: response.data.result };
     } catch (error) {
