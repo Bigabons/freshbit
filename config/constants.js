@@ -1,6 +1,6 @@
 const CONSTANTS = {
   BITRIX: {
-    WEBHOOK_URL: process.env.BITRIX_WEBHOOK_URL,
+     BITRIX_WEBHOOK_URL: 'https://amso.bitrix24.pl/rest/73/audb28knfpklnuwq',
     ACTIVITY_TYPES: {
       EMAIL: 4,
       TASK: 2,
