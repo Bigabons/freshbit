@@ -1,12 +1,22 @@
+// services/freshdesk.js
 const axios = require('axios');
 const { FRESHDESK } = require('../config/constants');
 
 class FreshdeskService {
   constructor() {
     this.apiKey = 'fudeK2qmGxOtp73ySDFj';
-    this.domain = FRESHDESK.DOMAIN;
+    // Dodajmy więcej logowania
+    console.log('FreshdeskService configuration:', {
+      domain: FRESHDESK.DOMAIN,
+      baseURL: `https://${FRESHDESK.DOMAIN}.freshdesk.com/api/v2`
+    });
+
+    if (!FRESHDESK.DOMAIN) {
+      throw new Error('FRESHDESK_DOMAIN environment variable is not set');
+    }
+
     this.client = axios.create({
-      baseURL: `https://${this.domain}.freshdesk.com/api/v2`,
+      baseURL: `https://${FRESHDESK.DOMAIN}.freshdesk.com/api/v2`,
       auth: {
         username: this.apiKey,
         password: 'X'
@@ -19,46 +29,24 @@ class FreshdeskService {
 
   async getTicket(ticketId) {
     try {
+      console.log(`Attempting to fetch ticket ${ticketId} from Freshdesk`);
+      console.log(`Full URL: ${this.client.defaults.baseURL}/tickets/${ticketId}`);
+      
       const response = await this.client.get(`/tickets/${ticketId}`);
       return response.data;
     } catch (error) {
-      console.error('Error getting ticket:', {
+      console.error('Detailed error in getTicket:', {
         ticketId,
-        error: error.message,
-        response: error.response?.data
-      });
-      throw error;
-    }
-  }
-
-  async getTicketConversations(ticketId) {
-    try {
-      const response = await this.client.get(`/tickets/${ticketId}/conversations`);
-      return response.data;
-    } catch (error) {
-      console.error('Error getting ticket conversations:', {
-        ticketId,
-        error: error.message,
-        response: error.response?.data
-      });
-      throw error;
-    }
-  }
-
-  async downloadAttachment(attachmentId) {
-    try {
-      const response = await this.client.get(`/attachments/${attachmentId}`, {
-        responseType: 'arraybuffer'
-      });
-      return response.data;
-    } catch (error) {
-      console.error('Error downloading attachment:', {
-        attachmentId,
-        error: error.message
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        url: error.config?.url,
+        headers: error.config?.headers
       });
       throw error;
     }
   }
 }
 
-module.exports = FreshdeskService;
+const freshdeskService = new FreshdeskService();
+module.exports = freshdeskService;
