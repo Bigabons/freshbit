@@ -1,20 +1,16 @@
 {
   "version": 2,
+  "routes": [
+    {
+      "src": "/webhook/freshdesk",
+      "methods": ["POST", "OPTIONS"],
+      "dest": "/api"
+    }
+  ],
   "functions": {
     "api/index.js": {
       "memory": 1024,
       "maxDuration": 10
     }
-  },
-  "routes": [
-    {
-      "src": "/webhook/freshdesk/ticket",
-      "methods": ["POST", "OPTIONS"],
-      "dest": "/api"
-    }
-  ],
-  "env": {
-    "BITRIX_WEBHOOK_URL": "@bitrix_webhook_url",
-    "FRESHDESK_DOMAIN": "@freshdesk_domain"
   }
 }
