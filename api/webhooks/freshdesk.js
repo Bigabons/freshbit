@@ -1,9 +1,7 @@
-// api/webhooks/freshdesk.js
 const freshdeskService = require('../../services/freshdesk');
-const bitrixService = require('../../services/bitrix');
+const BitrixService = require('../../services/bitrix');
 
 const bitrixService = new BitrixService();
-const freshdeskService = new FreshdeskService();
 
 async function handleFreshdeskWebhook(req, res) {
   try {
