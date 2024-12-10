@@ -1,13 +1,11 @@
+const bitrixService = require('../../services/bitrix');
 const freshdeskService = require('../../services/freshdesk');
-const BitrixService = require('../../services/bitrix');
-
-const bitrixService = new BitrixService();
 
 async function handleFreshdeskWebhook(req, res) {
   try {
     const webhookData = req.body;
-    
-    // Tworzymy kontakt
+    console.log('Webhook data:', webhookData);
+
     const contactData = {
       EMAIL: [{ VALUE: webhookData.email, VALUE_TYPE: 'WORK' }],
       NAME: webhookData.requester_name || '',
@@ -15,37 +13,38 @@ async function handleFreshdeskWebhook(req, res) {
       SOURCE_ID: 'FRESHDESK'
     };
 
-    const contact = await bitrixService.findContactByEmail(webhookData.email) || 
-                   await bitrixService.createContact(contactData);
+    let contact = await bitrixService.findContactByEmail(webhookData.email);
+    if (!contact) {
+      contact = await bitrixService.createContact(contactData);
+    }
 
-    // Tworzymy aktywność
     const activityData = {
-      OWNER_TYPE_ID: 3, // Contact
+      OWNER_TYPE_ID: 3,
       OWNER_ID: contact.ID,
-      TYPE_ID: 4, // Email
+      TYPE_ID: 4,
       SUBJECT: webhookData.subject,
       DESCRIPTION: webhookData.description,
       START_TIME: webhookData.created_at,
       COMPLETED: 'Y',
-      DIRECTION: 2, // Incoming
-      PRIORITY: webhookData.priority || 2,
+      DIRECTION: 2,
       COMMUNICATIONS: [{
         TYPE: 'EMAIL',
         VALUE: webhookData.email
       }]
     };
 
-    const activity = await bitrixService.createActivity(activityData);
+    const activityId = await bitrixService.createActivity(activityData);
 
     return res.json({
       success: true,
       contactId: contact.ID,
-      activityId: activity.ID
+      activityId
     });
 
   } catch (error) {
-    console.error('Webhook error:', error);
-    return res.status(500).json({ success: false, error: error.message });
+    console.error('Error:', error);
+    return res.status(500).json({ error: error.message });
   }
 }
+
 module.exports = handleFreshdeskWebhook;
