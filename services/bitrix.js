@@ -3,7 +3,7 @@ const { BITRIX } = require('../config/constants');
 
 class BitrixService {
   constructor() {
-    this.webhookUrl = BITRIX.WEBHOOK_URL;
+    this.webhookUrl = "https://amso.bitrix24.pl/rest/73/wv8r8q74pxb5emue/";
   }
 
   async findContactByEmail(email) {
