@@ -18,8 +18,8 @@ const CONSTANTS = {
   },
   
   FRESHDESK: {
-    API_KEY: process.env.FRESHDESK_API_KEY,
-    DOMAIN: process.env.FRESHDESK_DOMAIN,
+    API_KEY: 'fudeK2qmGxOtp73ySDFj',
+    DOMAIN: 'https://amso.freshdesk.com/',
     TICKET_PRIORITIES: {
       LOW: 1,
       MEDIUM: 2,
