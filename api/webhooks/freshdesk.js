@@ -1,5 +1,6 @@
-const BitrixService = require('../services/bitrix');
-const FreshdeskService = require('../services/freshdesk');
+// api/webhooks/freshdesk.js - poprawiona wersja
+const BitrixService = require('../../services/bitrix');  // zmiana ścieżki
+const FreshdeskService = require('../../services/freshdesk'); // zmiana ścieżki
 
 const bitrixService = new BitrixService();
 const freshdeskService = new FreshdeskService();
