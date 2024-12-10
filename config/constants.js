@@ -1,11 +1,12 @@
 const CONSTANTS = {
   BITRIX: {
-     BITRIX_WEBHOOK_URL: 'https://amso.bitrix24.pl/rest/73/audb28knfpklnuwq',
+    WEBHOOK_URL: 'https://amso.bitrix24.pl/rest/73/audb28knfpklnuwq', // Twój webhook URL
     ACTIVITY_TYPES: {
       EMAIL: 4,
       TASK: 2,
       CALL: 1
-    },
+    }
+  },
     ACTIVITY_DIRECTIONS: {
       INCOMING: 2,
       OUTGOING: 1
