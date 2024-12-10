@@ -4,9 +4,9 @@ const { FRESHDESK } = require('../config/constants');
 class FreshdeskService {
   constructor() {
     this.apiKey = 'fudeK2qmGxOtp73ySDFj';
-    this.domain = FRESHDESK.DOMAIN;
+    this.domain = 'https://amso.freshdesk.com/';
     this.client = axios.create({
-      baseURL: `https://${this.domain}.freshdesk.com/api/v2`,
+      baseURL: `https://amso.freshdesk.com/api/v2`,
       auth: {
         username: this.apiKey,
         password: 'X'
