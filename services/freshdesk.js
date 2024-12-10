@@ -1,12 +1,19 @@
+// services/freshdesk.js
 const axios = require('axios');
-const { FRESHDESK } = require('../config/constants'); // zmiana ścieżki
+const { FRESHDESK } = require('../config/constants');
 
 class FreshdeskService {
   constructor() {
     this.apiKey = 'fudeK2qmGxOtp73ySDFj';
-    this.domain = 'https://amso.freshdesk.com/';
+    // Sprawdźmy czy mamy domenę
+    if (!FRESHDESK.DOMAIN) {
+      console.warn('Missing FRESHDESK_DOMAIN environment variable');
+    }
+    
+    console.log('Initializing Freshdesk client with domain:', FRESHDESK.DOMAIN);
+    
     this.client = axios.create({
-      baseURL: `https://amso.freshdesk.com/api/v2`,
+      baseURL: `https://${FRESHDESK.DOMAIN}.freshdesk.com/api/v2`,
       auth: {
         username: this.apiKey,
         password: 'X'
@@ -18,47 +25,23 @@ class FreshdeskService {
   }
 
   async getTicket(ticketId) {
+    console.log('Fetching ticket:', ticketId);
     try {
       const response = await this.client.get(`/tickets/${ticketId}`);
       return response.data;
     } catch (error) {
-      console.error('Error getting ticket:', {
+      console.error('Error fetching ticket:', {
         ticketId,
-        error: error.message,
-        response: error.response?.data
-      });
-      throw error;
-    }
-  }
-
-  async getTicketConversations(ticketId) {
-    try {
-      const response = await this.client.get(`/tickets/${ticketId}/conversations`);
-      return response.data;
-    } catch (error) {
-      console.error('Error getting ticket conversations:', {
-        ticketId,
-        error: error.message,
-        response: error.response?.data
-      });
-      throw error;
-    }
-  }
-
-  async downloadAttachment(attachmentId) {
-    try {
-      const response = await this.client.get(`/attachments/${attachmentId}`, {
-        responseType: 'arraybuffer'
-      });
-      return response.data;
-    } catch (error) {
-      console.error('Error downloading attachment:', {
-        attachmentId,
-        error: error.message
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        config: {
+          url: error.config?.url,
+          method: error.config?.method,
+          headers: error.config?.headers
+        }
       });
       throw error;
     }
   }
 }
-
-module.exports = FreshdeskService;
