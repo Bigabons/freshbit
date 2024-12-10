@@ -1,82 +1,82 @@
-// webhook-handler.js
+const BitrixService = require('../services/bitrix');
+const FreshdeskService = require('../services/freshdesk');
 
-const BitrixService = require('./services/bitrix');
-const FreshdeskService = require('./services/freshdesk'); 
+const bitrixService = new BitrixService();
+const freshdeskService = new FreshdeskService();
 
-class WebhookHandler {
-  constructor() {
-    this.bitrixService = new BitrixService();
-    this.freshdeskService = new FreshdeskService();
-  }
+async function handleFreshdeskWebhook(req, res) {
+  try {
+    const webhookData = req.body;
+    console.log('Received Freshdesk webhook:', webhookData);
 
-  async handleTicketCreate(webhookData) {
-    try {
-      // Wyciągnij dane z webhooka
-      const {
-        ticket_id,
-        email,
-        subject,
-        description,
-        attachments,
-        created_at
-      } = webhookData;
+    // Pobierz pełne dane ticketu
+    const ticket = await freshdeskService.getTicket(webhookData.ticket_id);
+    const conversations = await freshdeskService.getTicketConversations(webhookData.ticket_id);
 
-      // Znajdź kontakt w Bitrixie po emailu
-      const contact = await this.bitrixService.findContactByEmail(email);
-      
-      if(!contact) {
-        // Stwórz nowy kontakt jeśli nie istnieje
-        const contactData = {
-          EMAIL: [{ VALUE: email, VALUE_TYPE: 'WORK' }],
-          TYPE_ID: 'CLIENT',
-          SOURCE_ID: 'FRESHDESK'
-        };
-        
-        const newContact = await this.bitrixService.createContact(contactData);
-        contactId = newContact.ID;
-      } else {
-        contactId = contact.ID;
-      }
-
-      // Dodaj aktywność do kontaktu w Bitrixie
-      const activityData = {
-        OWNER_TYPE_ID: 3, // Contact
-        OWNER_ID: contactId,
-        TYPE_ID: 4, // Email
-        SUBJECT: subject,
-        DESCRIPTION: description,
-        START_TIME: created_at,
-        COMPLETED: 'Y',
-        DIRECTION: 2, // Incoming
-        SETTINGS: {
-          EMAIL: {
-            TICKET_ID: ticket_id,
-            SOURCE: 'FRESHDESK'
-          }
-        }
+    // Znajdź lub stwórz kontakt w Bitrixie
+    let contact = await bitrixService.findContactByEmail(ticket.email);
+    
+    if (!contact) {
+      const contactData = {
+        EMAIL: [{ VALUE: ticket.email, VALUE_TYPE: 'WORK' }],
+        NAME: ticket.name || '',
+        TYPE_ID: 'CLIENT',
+        SOURCE_ID: 'FRESHDESK',
+        COMMENTS: `Created from Freshdesk ticket #${ticket.id}`
       };
 
-      await this.bitrixService.createActivity(activityData);
-
-      // Obsłuż załączniki
-      if(attachments && attachments.length > 0) {
-        for(const attachment of attachments) {
-          const fileData = await this.freshdeskService.downloadAttachment(attachment.id);
-          await this.bitrixService.uploadActivityFile(fileData, activityId);
-        }
+      if (ticket.phone) {
+        contactData.PHONE = [{ VALUE: ticket.phone, VALUE_TYPE: 'WORK' }];
       }
 
-      return {
-        success: true,
-        contactId,
-        activityId  
-      };
-
-    } catch(error) {
-      console.error('Error handling webhook:', error);
-      throw error;
+      contact = await bitrixService.createContact(contactData);
     }
+
+    // Stwórz aktywność w Bitrixie
+    const activityData = {
+      OWNER_TYPE_ID: 3, // Contact
+      OWNER_ID: contact.ID,
+      TYPE_ID: 4, // Email
+      SUBJECT: ticket.subject,
+      DESCRIPTION: `
+        Ticket #${ticket.id}
+        Status: ${ticket.status}
+        Priority: ${ticket.priority}
+        
+        Description:
+        ${ticket.description}
+        
+        ${conversations.map(conv => `
+          --- ${conv.private ? 'Private note' : 'Public reply'} by ${conv.user_id} ---
+          ${conv.body_text}
+        `).join('\n')}
+      `,
+      START_TIME: new Date(ticket.created_at).toISOString(),
+      COMPLETED: 'Y',
+      DIRECTION: 2, // Incoming
+      SETTINGS: {
+        EMAIL: {
+          TICKET_ID: ticket.id,
+          SOURCE: 'FRESHDESK'
+        }
+      }
+    };
+
+    const activity = await bitrixService.createActivity(activityData);
+
+    return res.json({
+      success: true,
+      contactId: contact.ID,
+      activityId: activity.ID
+    });
+
+  } catch (error) {
+    console.error('Error handling Freshdesk webhook:', error);
+    return res.status(500).json({
+      success: false,
+      error: error.message
+    });
   }
 }
 
-module.exports = WebhookHandler;
+module.exports = handleFreshdeskWebhook;
