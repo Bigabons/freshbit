@@ -6,25 +6,28 @@ const bitrixService = new BitrixService();
 async function handleFreshdeskWebhook(req, res) {
   try {
     const webhookData = req.body;
-    console.log('Full webhook payload:', JSON.stringify(webhookData, null, 2));
+    console.log('Processing webhook for ticket:', webhookData.ticket_id);
 
-    // Walidacja danych wejściowych
-    if (!webhookData.freshdesk_webhook?.ticket_id) {
-      console.log('Looking for ticket_id in different payload structure...');
-      console.log('Available fields:', Object.keys(webhookData));
-      
-      // Próbujmy znaleźć ticket_id w różnych miejscach payloadu
-      const ticketId = webhookData.ticket_id || 
-                      webhookData.data?.ticket_id || 
-                      webhookData.freshdesk_webhook?.ticket_id;
+    const contactData = {
+      EMAIL: [{ VALUE: webhookData.email, VALUE_TYPE: 'WORK' }],
+      NAME: webhookData.requester_name || '',
+      TYPE_ID: 'CLIENT',
+      SOURCE_ID: 'FRESHDESK'
+    };
 
-      if (!ticketId) {
-        return res.status(400).json({
-          success: false,
-          error: 'Missing ticket_id in webhook data'
-        });
-      }
-    }
+    const contact = await bitrixService.createContact(contactData);
+    
+    return res.json({
+      success: true,
+      contactId: contact.ID,
+      ticketId: webhookData.ticket_id
+    });
+
+  } catch (error) {
+    console.error('Webhook error:', error);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+}
     try {
       // Najpierw spróbujmy pobrać dane ticketu
       console.log('Fetching ticket details for ID:', webhookData.ticket_id);
