@@ -1,5 +1,6 @@
 const handleFreshdeskWebhook = require('./webhooks/freshdesk');
 
+
 module.exports = async (req, res) => {
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
