@@ -2,23 +2,7 @@
 const axios = require('axios');
 const { FRESHDESK } = require('../config/constants');
 // Dodaj metodę testową do FreshdeskService
-async testConnection() {
-  try {
-    console.log('Testing Freshdesk API connection...');
-    const response = await this.client.get('/tickets?per_page=1');
-    console.log('Connection successful:', {
-      status: response.status,
-      headers: response.headers
-    });
-    return true;
-  } catch (error) {
-    console.error('Connection test failed:', {
-      status: error.response?.status,
-      message: error.message
-    });
-    return false;
-  }
-}
+
 class FreshdeskService {
   constructor() {
     this.apiKey = 'fudeK2qmGxOtp73ySDFj';
