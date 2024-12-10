@@ -1,76 +1,51 @@
+// services/bitrix.js
 const axios = require('axios');
-const { BITRIX } = require('../config/constants'); // zmiana ścieżki
+const { BITRIX } = require('../config/constants');
 
 class BitrixService {
   constructor() {
-    this.webhookUrl = "https://amso.bitrix24.pl/rest/73/wv8r8q74pxb5emue/";
+    this.webhookUrl = BITRIX.WEBHOOK_URL;
   }
 
   async findContactByEmail(email) {
     try {
       const response = await axios.post(`${this.webhookUrl}/crm.contact.list`, {
         filter: { 'EMAIL': email },
-        select: ['ID', 'NAME', 'LAST_NAME', 'EMAIL', 'PHONE']
+        select: ['ID', 'NAME', 'EMAIL']
       });
-      
-      return response.data.result[0] || null;
+      return response.data.result[0];
     } catch (error) {
-      console.error('Error finding contact:', {
-        email,
-        error: error.message,
-        response: error.response?.data
-      });
+      console.error('Error finding contact:', error);
       throw error;
     }
   }
 
-  async createContact(contactData) {
+  async createContact(fields) {
     try {
       const response = await axios.post(`${this.webhookUrl}/crm.contact.add`, {
-        fields: contactData
+        fields
       });
-      
       return { ID: response.data.result };
     } catch (error) {
-      console.error('Error creating contact:', {
-        contactData,
-        error: error.message,
-        response: error.response?.data
-      });
+      console.error('Error creating contact:', error);
       throw error;
     }
   }
 
-async createActivity(fields) {
-  try {
-    const response = await axios.post(`${this.webhookUrl}/crm.activity.add`, {
-      fields: {
-        ...fields,
-        CREATED_BY: 1
-      }
-    });
-    return { ID: response.data.result };
-  } catch (error) {
-    console.error('Error creating activity:', error);
-    throw error;
-  }
-}
-      
-      return { ID: response.data.result };
-    } catch (error) {
-      console.error('Error creating activity:', {
-        activityData,
-        error: error.message,
-        response: error.response?.data
+  async createActivity(fields) {
+    try {
+      const response = await axios.post(`${this.webhookUrl}/crm.activity.add`, {
+        fields: {
+          ...fields,
+          CREATED_BY: 1
+        }
       });
+      return response.data.result;
+    } catch (error) {
+      console.error('Error creating activity:', error);
       throw error;
     }
   }
-
-  async uploadActivityFile(fileData, activityId) {
-    // Implementacja uploadu plików do Bitrixa
-    // To zaimplementujemy w następnym kroku
-  }
 }
 
-module.exports = BitrixService;
+module.exports = new BitrixService();
