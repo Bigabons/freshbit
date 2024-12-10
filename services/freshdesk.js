@@ -1,5 +1,5 @@
 const axios = require('axios');
-const { FRESHDESK } = require('../config/constants');
+const { FRESHDESK } = require('../config/constants'); // zmiana ścieżki
 
 class FreshdeskService {
   constructor() {
