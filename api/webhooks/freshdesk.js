@@ -8,17 +8,25 @@ const freshdeskService = new FreshdeskService();
 async function handleFreshdeskWebhook(req, res) {
   try {
     const webhookData = req.body;
-    console.log('Received webhook data:', JSON.stringify(webhookData, null, 2));
+    console.log('Full webhook payload:', JSON.stringify(webhookData, null, 2));
 
-    // Sprawdźmy czy mamy wszystkie wymagane pola
-    if (!webhookData.ticket_id || !webhookData.email) {
-      console.error('Missing required fields:', webhookData);
-      return res.status(400).json({
-        success: false,
-        error: 'Missing required fields'
-      });
+    // Walidacja danych wejściowych
+    if (!webhookData.freshdesk_webhook?.ticket_id) {
+      console.log('Looking for ticket_id in different payload structure...');
+      console.log('Available fields:', Object.keys(webhookData));
+      
+      // Próbujmy znaleźć ticket_id w różnych miejscach payloadu
+      const ticketId = webhookData.ticket_id || 
+                      webhookData.data?.ticket_id || 
+                      webhookData.freshdesk_webhook?.ticket_id;
+
+      if (!ticketId) {
+        return res.status(400).json({
+          success: false,
+          error: 'Missing ticket_id in webhook data'
+        });
+      }
     }
-
     try {
       // Najpierw spróbujmy pobrać dane ticketu
       console.log('Fetching ticket details for ID:', webhookData.ticket_id);
