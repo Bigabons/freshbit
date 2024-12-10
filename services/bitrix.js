@@ -1,5 +1,5 @@
 const axios = require('axios');
-const { BITRIX } = require('../config/constants');
+const { BITRIX } = require('../config/constants'); // zmiana ścieżki
 
 class BitrixService {
   constructor() {
