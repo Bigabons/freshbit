@@ -3,8 +3,13 @@ const axios = require('axios');
 const { BITRIX } = require('../config/constants');
 
 class BitrixService {
-  constructor() {
-    this.webhookUrl = BITRIX.WEBHOOK_URL;
+ constructor() {
+  if (!BITRIX.WEBHOOK_URL) {
+    throw new Error('BITRIX_WEBHOOK_URL is not defined');
+  }
+  this.webhookUrl = BITRIX.WEBHOOK_URL;
+  console.log('BitrixService initialized with URL:', this.webhookUrl);
+}
   }
 
   async findContactByEmail(email) {
