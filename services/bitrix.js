@@ -1,18 +1,13 @@
-// services/bitrix.js
 const axios = require('axios');
 const { BITRIX } = require('../config/constants');
 
 class BitrixService {
- constructor() {
-  if (!BITRIX.WEBHOOK_URL) {
-    throw new Error('BITRIX_WEBHOOK_URL is not defined');
+  constructor() {
+    this.webhookUrl = BITRIX.WEBHOOK_URL;
+    console.log('BitrixService initialized with URL:', this.webhookUrl);
   }
-  this.webhookUrl = BITRIX.WEBHOOK_URL;
-  console.log('BitrixService initialized with URL:', this.webhookUrl);
-}
-  }
-
-  async findContactByEmail(email) {
+  
+  findContactByEmail = async (email) => {
     try {
       const response = await axios.post(`${this.webhookUrl}/crm.contact.list`, {
         filter: { 'EMAIL': email },
@@ -25,11 +20,9 @@ class BitrixService {
     }
   }
 
-  async createContact(fields) {
+  createContact = async (fields) => {
     try {
-      const response = await axios.post(`${this.webhookUrl}/crm.contact.add`, {
-        fields
-      });
+      const response = await axios.post(`${this.webhookUrl}/crm.contact.add`, { fields });
       return { ID: response.data.result };
     } catch (error) {
       console.error('Error creating contact:', error);
@@ -37,13 +30,10 @@ class BitrixService {
     }
   }
 
-  async createActivity(fields) {
+  createActivity = async (fields) => {
     try {
       const response = await axios.post(`${this.webhookUrl}/crm.activity.add`, {
-        fields: {
-          ...fields,
-          CREATED_BY: 1
-        }
+        fields: { ...fields, CREATED_BY: 1 }
       });
       return response.data.result;
     } catch (error) {
