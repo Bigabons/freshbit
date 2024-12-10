@@ -19,7 +19,7 @@ const CONSTANTS = {
   
   FRESHDESK: {
     API_KEY: 'fudeK2qmGxOtp73ySDFj',
-    DOMAIN: 'https://amso.freshdesk.com/',
+    DOMAIN: 'amso',
     TICKET_PRIORITIES: {
       LOW: 1,
       MEDIUM: 2,
